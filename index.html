@@ -31,6 +31,7 @@
       background: #333;
       color: #fff;
     }
+    /* 響應式調整 */
     @media(max-width:600px){
       table, thead, tbody, th, td, tr {
         display: block;
@@ -60,33 +61,35 @@
     <div id="data">正在載入資料...</div>
   </div>
   <script>
-    // API 端點，請確認 od6 是否為正確的工作表識別符
-    const sheetURL = 'https://spreadsheets.google.com/feeds/list/1wVgH66hc3kHQhFji1wjYSIejd3wziwxbOtsc_g0TaIk/od6/public/values?alt=json';
+    /* 使用新版 gviz API 端點，請確保你的 Google Sheets 已發布到網路 */
+    const sheetURL = 'https://docs.google.com/spreadsheets/d/1wVgH66hc3kHQhFji1wjYSIejd3wziwxbOtsc_g0TaIk/gviz/tq?tqx=out:json';
 
     fetch(sheetURL)
       .then(response => {
         if (!response.ok) {
           throw new Error('網路請求失敗，狀態碼：' + response.status);
         }
-        return response.json();
+        return response.text();
       })
-      .then(data => {
-        console.log('從 API 取得的資料：', data);
-        if (!data.feed || !data.feed.entry) {
-          throw new Error('回傳資料格式異常：' + JSON.stringify(data));
+      .then(text => {
+        // gviz API 回傳的內容會包含前置字串（例如 "/*O_o*/"），用正規表達式取出有效 JSON
+        const jsonStr = text.match(/{.*}/)[0];
+        const jsonData = JSON.parse(jsonStr);
+        if (!jsonData.table) {
+          throw new Error('回傳資料格式異常：' + JSON.stringify(jsonData));
         }
-        const entries = data.feed.entry;
+        // 解析欄位與資料列
+        const cols = jsonData.table.cols;
+        const rows = jsonData.table.rows;
         let html = '<table><thead><tr>';
-        // 取得所有以 gsx$ 為前綴的欄位
-        const headers = Object.keys(entries[0]).filter(key => key.startsWith('gsx$'));
-        headers.forEach(header => {
-          html += `<th>${header.replace('gsx$', '')}</th>`;
+        cols.forEach(col => {
+          html += `<th>${col.label}</th>`;
         });
         html += '</tr></thead><tbody>';
-        entries.forEach(entry => {
+        rows.forEach(row => {
           html += '<tr>';
-          headers.forEach(header => {
-            html += `<td>${entry[header]['$t']}</td>`;
+          row.c.forEach(cell => {
+            html += `<td>${cell ? cell.v : ''}</td>`;
           });
           html += '</tr>';
         });
