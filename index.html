@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Sheets 資料展示</title>
+  <style>
+    /* 基本樣式與響應式設定 */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    table th {
+      background: #333;
+      color: #fff;
+    }
+    /* 響應式調整：在螢幕寬度較窄時，轉為區塊顯示 */
+    @media(max-width:600px){
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      table th {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+      table td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        text-align: left;
+      }
+      table td:before {
+        position: absolute;
+        left: 6px;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Google Sheets 資料展示</h1>
+    <div id="data">正在載入資料...</div>
+  </div>
+  <script>
+    // 設定 Google Sheets 的 JSON 資料來源
+    // 請先確保 Google Sheets 已發布至網路
+    const sheetURL = 'https://spreadsheets.google.com/feeds/list/1wVgH66hc3kHQhFji1wjYSIejd3wziwxbOtsc_g0TaIk/od6/public/values?alt=json';
+
+    fetch(sheetURL)
+      .then(response => response.json())
+      .then(data => {
+        // 從回傳的 JSON 資料中取得表格資料
+        const entries = data.feed.entry;
+        if (!entries || entries.length === 0) {
+          document.getElementById('data').innerText = '無資料';
+          return;
+        }
+        let html = '<table><thead><tr>';
+        // 假設欄位名稱皆以 gsx$ 開頭，這裡抓取所有欄位
+        const headers = Object.keys(entries[0]).filter(key => key.startsWith('gsx$'));
+        headers.forEach(header => {
+          html += `<th>${header.replace('gsx$', '')}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+        // 逐筆產生表格內容
+        entries.forEach(entry => {
+          html += '<tr>';
+          headers.forEach(header => {
+            html += `<td>${entry[header]['$t']}</td>`;
+          });
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+        document.getElementById('data').innerHTML = html;
+      })
+      .catch(error => {
+        console.error('錯誤:', error);
+        document.getElementById('data').innerText = '資料載入失敗';
+      });
+  </script>
+</body>
+</html>
