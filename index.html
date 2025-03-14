@@ -31,7 +31,6 @@
       background: #333;
       color: #fff;
     }
-    /* 響應式調整：在螢幕寬度較窄時，轉為區塊顯示 */
     @media(max-width:600px){
       table, thead, tbody, th, td, tr {
         display: block;
@@ -61,27 +60,29 @@
     <div id="data">正在載入資料...</div>
   </div>
   <script>
-    // 設定 Google Sheets 的 JSON 資料來源
-    // 請先確保 Google Sheets 已發布至網路
+    // API 端點，請確認 od6 是否為正確的工作表識別符
     const sheetURL = 'https://spreadsheets.google.com/feeds/list/1wVgH66hc3kHQhFji1wjYSIejd3wziwxbOtsc_g0TaIk/od6/public/values?alt=json';
 
     fetch(sheetURL)
-      .then(response => response.json())
-      .then(data => {
-        // 從回傳的 JSON 資料中取得表格資料
-        const entries = data.feed.entry;
-        if (!entries || entries.length === 0) {
-          document.getElementById('data').innerText = '無資料';
-          return;
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('網路請求失敗，狀態碼：' + response.status);
         }
+        return response.json();
+      })
+      .then(data => {
+        console.log('從 API 取得的資料：', data);
+        if (!data.feed || !data.feed.entry) {
+          throw new Error('回傳資料格式異常：' + JSON.stringify(data));
+        }
+        const entries = data.feed.entry;
         let html = '<table><thead><tr>';
-        // 假設欄位名稱皆以 gsx$ 開頭，這裡抓取所有欄位
+        // 取得所有以 gsx$ 為前綴的欄位
         const headers = Object.keys(entries[0]).filter(key => key.startsWith('gsx$'));
         headers.forEach(header => {
           html += `<th>${header.replace('gsx$', '')}</th>`;
         });
         html += '</tr></thead><tbody>';
-        // 逐筆產生表格內容
         entries.forEach(entry => {
           html += '<tr>';
           headers.forEach(header => {
@@ -94,7 +95,7 @@
       })
       .catch(error => {
         console.error('錯誤:', error);
-        document.getElementById('data').innerText = '資料載入失敗';
+        document.getElementById('data').innerText = '資料載入失敗，錯誤內容：' + error.message;
       });
   </script>
 </body>
