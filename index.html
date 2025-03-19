@@ -85,10 +85,10 @@
             }
             // 檢查是否有網址，將所有網址轉換為超連結
             else if (typeof cellValue === 'string' && cellValue.includes('http')) {
-              cellValue = cellValue.replace(
-                /\b(https?:\/\/[^\s]+)\b/g, 
-                '<a href="$1" target="_blank">$1</a>'
-              );
+              // 使用正規表達式找出所有網址並轉換為超連結
+              cellValue = cellValue.replace(/(https?:\/\/[^\s]+)/g, function(url) {
+                return `<a href="${url}" target="_blank">${url}</a>`;
+              });
             }
 
             html += `<td>${cellValue}</td>`;
