@@ -79,13 +79,16 @@
           row.c.forEach((cell, index) => {
             let cellValue = cell ? cell.v : '';
 
-            // 檢查是否是圖片網址，轉換為 <img>
-            if (typeof cellValue === 'string' && cellValue.startsWith('http') && (cellValue.endsWith('.jpg') || cellValue.endsWith('.png') || cellValue.endsWith('.jpeg'))) {
+            // 檢查是否為圖片網址
+            if (typeof cellValue === 'string' && cellValue.match(/\bhttps?:\/\/\S+\.(jpg|png|jpeg)\b/gi)) {
               cellValue = `<img src="${cellValue}" width="100">`;
             }
-            // 檢查是否是超連結，轉換為 <a>
-            else if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
-              cellValue = `<a href="${cellValue}" target="_blank">${cellValue}</a>`;
+            // 檢查是否有網址，將所有網址轉換為超連結
+            else if (typeof cellValue === 'string' && cellValue.includes('http')) {
+              cellValue = cellValue.replace(
+                /\b(https?:\/\/[^\s]+)\b/g, 
+                '<a href="$1" target="_blank">$1</a>'
+              );
             }
 
             html += `<td>${cellValue}</td>`;
