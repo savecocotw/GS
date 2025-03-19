@@ -45,6 +45,35 @@
     a:hover {
       text-decoration: underline;
     }
+    /* 彈窗樣式 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .modal button {
+      margin: 10px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .modal button.cancel {
+      background-color: #f44336;
+    }
   </style>
 </head>
 <body>
@@ -52,6 +81,16 @@
     <h1>Google Sheets 資料展示</h1>
     <div id="data">正在載入資料...</div>
   </div>
+
+  <!-- 彈窗 -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <p>您將前往到露天拍賣，是否繼續?</p>
+      <button id="confirmBtn">我要去下單</button>
+      <button id="cancelBtn" class="cancel">我想想</button>
+    </div>
+  </div>
+
   <script>
     /* Google Sheets API 讀取 */
     const sheetURL = 'https://docs.google.com/spreadsheets/d/1wVgH66hc3kHQhFji1wjYSIejd3wziwxbOtsc_g0TaIk/gviz/tq?tqx=out:json';
@@ -79,30 +118,18 @@
           row.c.forEach((cell, index) => {
             let cellValue = cell ? cell.v : '';
 
-            // 輸出每個 cellValue 來檢查
-            console.log('原始欄位值：', cellValue);
-
             // 檢查是否為圖片網址
             if (typeof cellValue === 'string' && cellValue.match(/\bhttps?:\/\/\S+\.(jpg|png|jpeg)\b/gi)) {
-              console.log('圖片網址：', cellValue); // 測試圖片網址是否成功匹配
               cellValue = `<img src="${cellValue}" width="100">`;
             }
             // 檢查是否有網址，將所有網址轉換為超連結
             else if (typeof cellValue === 'string') {
-              // 這裡的正則表達式用來識別並替換文本中的網址
               const urlRegex = /(https?:\/\/[^\s]+)/g;
 
               // 替換所有匹配的網址
               cellValue = cellValue.replace(urlRegex, function(url) {
-                console.log('找到網址：', url); // 顯示找到的網址
-                return `<a href="${url}" target="_blank">${url}</a>`;
+                return `<a href="${url}" target="_blank" class="external-link">${url}</a>`;
               });
-
-              // 在文字和網址混合的情況下，文字和網址會保留並顯示超連結
-              if (!urlRegex.test(cellValue)) {
-                // 如果文本中未能識別出網址
-                console.log('未能識別為網址：', cellValue);
-              }
             }
 
             html += `<td>${cellValue}</td>`;
@@ -112,6 +139,30 @@
 
         html += '</tbody></table>';
         document.getElementById('data').innerHTML = html;
+
+        // 處理超連結點擊事件
+        const links = document.querySelectorAll('.external-link');
+        links.forEach(link => {
+          link.addEventListener('click', function(event) {
+            event.preventDefault();  // 阻止立即跳轉
+            const url = this.href;
+            
+            // 顯示彈窗
+            const modal = document.getElementById('modal');
+            modal.style.display = 'flex';
+            
+            // 確認按鈕
+            document.getElementById('confirmBtn').onclick = function() {
+              window.open(url, '_blank');
+              modal.style.display = 'none';
+            };
+            
+            // 取消按鈕
+            document.getElementById('cancelBtn').onclick = function() {
+              modal.style.display = 'none';
+            };
+          });
+        });
       })
       .catch(error => {
         console.error('錯誤:', error);
