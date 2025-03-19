@@ -38,6 +38,13 @@
       display: block;
       margin: auto;
     }
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -71,10 +78,16 @@
           html += '<tr>';
           row.c.forEach((cell, index) => {
             let cellValue = cell ? cell.v : '';
-            // 如果是圖片網址，轉換為 <img>
+
+            // 檢查是否是圖片網址，轉換為 <img>
             if (typeof cellValue === 'string' && cellValue.startsWith('http') && (cellValue.endsWith('.jpg') || cellValue.endsWith('.png') || cellValue.endsWith('.jpeg'))) {
               cellValue = `<img src="${cellValue}" width="100">`;
             }
+            // 檢查是否是超連結，轉換為 <a>
+            else if (typeof cellValue === 'string' && cellValue.startsWith('http')) {
+              cellValue = `<a href="${cellValue}" target="_blank">${cellValue}</a>`;
+            }
+
             html += `<td>${cellValue}</td>`;
           });
           html += '</tr>';
