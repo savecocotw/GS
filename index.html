@@ -79,14 +79,20 @@
           row.c.forEach((cell, index) => {
             let cellValue = cell ? cell.v : '';
 
+            // 輸出每個 cellValue 來檢查
+            console.log('原始欄位值：', cellValue);
+
             // 檢查是否為圖片網址
             if (typeof cellValue === 'string' && cellValue.match(/\bhttps?:\/\/\S+\.(jpg|png|jpeg)\b/gi)) {
+              console.log('圖片網址：', cellValue); // 測試圖片網址是否成功匹配
               cellValue = `<img src="${cellValue}" width="100">`;
             }
             // 檢查是否有網址，將所有網址轉換為超連結
             else if (typeof cellValue === 'string' && cellValue.includes('http')) {
-              // 使用正規表達式找出所有網址並轉換為超連結
+              // 使用正則表達式找出所有網址並轉換為超連結
+              console.log('檢測到網址，開始替換為超連結');
               cellValue = cellValue.replace(/(https?:\/\/[^\s]+)/g, function(url) {
+                console.log('找到網址：', url); // 顯示找到的網址
                 return `<a href="${url}" target="_blank">${url}</a>`;
               });
             }
