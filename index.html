@@ -13,7 +13,7 @@
       background: #f4f4f4;
     }
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
       background: #fff;
       padding: 20px;
@@ -26,32 +26,17 @@
     table th, table td {
       border: 1px solid #ddd;
       padding: 8px;
+      text-align: center;
     }
     table th {
       background: #333;
       color: #fff;
     }
-    /* 響應式調整 */
-    @media(max-width:600px){
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
-      table th {
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-      }
-      table td {
-        border: none;
-        position: relative;
-        padding-left: 50%;
-        text-align: left;
-      }
-      table td:before {
-        position: absolute;
-        left: 6px;
-        white-space: nowrap;
-      }
+    img {
+      max-width: 100px;
+      height: auto;
+      display: block;
+      margin: auto;
     }
   </style>
 </head>
@@ -61,7 +46,7 @@
     <div id="data">正在載入資料...</div>
   </div>
   <script>
-    /* 使用新版 gviz API 端點，請確保你的 Google Sheets 已發布到網路 */
+    /* Google Sheets API 讀取 */
     const sheetURL = 'https://docs.google.com/spreadsheets/d/1wVgH66hc3kHQhFji1wjYSIejd3wziwxbOtsc_g0TaIk/gviz/tq?tqx=out:json';
 
     fetch(sheetURL)
@@ -72,27 +57,29 @@
         return response.text();
       })
       .then(text => {
-        // gviz API 回傳的內容會包含前置字串（例如 "/*O_o*/"），用正規表達式取出有效 JSON
+        // 解析 JSON 資料
         const jsonStr = text.match(/{.*}/)[0];
         const jsonData = JSON.parse(jsonStr);
-        if (!jsonData.table) {
-          throw new Error('回傳資料格式異常：' + JSON.stringify(jsonData));
-        }
-        // 解析欄位與資料列
         const cols = jsonData.table.cols;
         const rows = jsonData.table.rows;
+        
         let html = '<table><thead><tr>';
-        cols.forEach(col => {
-          html += `<th>${col.label}</th>`;
-        });
+        cols.forEach(col => html += `<th>${col.label}</th>`);
         html += '</tr></thead><tbody>';
+        
         rows.forEach(row => {
           html += '<tr>';
-          row.c.forEach(cell => {
-            html += `<td>${cell ? cell.v : ''}</td>`;
+          row.c.forEach((cell, index) => {
+            let cellValue = cell ? cell.v : '';
+            // 如果是圖片網址，轉換為 <img>
+            if (typeof cellValue === 'string' && cellValue.startsWith('http') && (cellValue.endsWith('.jpg') || cellValue.endsWith('.png') || cellValue.endsWith('.jpeg'))) {
+              cellValue = `<img src="${cellValue}" width="100">`;
+            }
+            html += `<td>${cellValue}</td>`;
           });
           html += '</tr>';
         });
+
         html += '</tbody></table>';
         document.getElementById('data').innerHTML = html;
       })
