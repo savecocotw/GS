@@ -88,10 +88,10 @@
               cellValue = `<img src="${cellValue}" width="100">`;
             }
             // 檢查是否有網址，將所有網址轉換為超連結
-            else if (typeof cellValue === 'string' && cellValue.includes('http')) {
+            else if (typeof cellValue === 'string') {
               // 使用正則表達式找出所有網址並轉換為超連結
-              console.log('檢測到網址，開始替換為超連結');
-              cellValue = cellValue.replace(/(https?:\/\/[^\s]+)/g, function(url) {
+              const urlRegex = /(https?:\/\/[^\s]+)/g;
+              cellValue = cellValue.replace(urlRegex, function(url) {
                 console.log('找到網址：', url); // 顯示找到的網址
                 return `<a href="${url}" target="_blank">${url}</a>`;
               });
