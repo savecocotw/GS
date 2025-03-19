@@ -89,18 +89,18 @@
             }
             // 檢查是否有網址，將所有網址轉換為超連結
             else if (typeof cellValue === 'string') {
-              // 確保處理包含文字和網址的情況
+              // 這裡的正則表達式用來識別並替換文本中的網址
               const urlRegex = /(https?:\/\/[^\s]+)/g;
 
-              // 將網址替換為超連結
+              // 替換所有匹配的網址
               cellValue = cellValue.replace(urlRegex, function(url) {
                 console.log('找到網址：', url); // 顯示找到的網址
                 return `<a href="${url}" target="_blank">${url}</a>`;
               });
 
-              // 檢查是否包含網址與文字混合
+              // 在文字和網址混合的情況下，文字和網址會保留並顯示超連結
               if (!urlRegex.test(cellValue)) {
-                // 如果文字和網址混合且無法識別為網址，則應保留原始格式
+                // 如果文本中未能識別出網址
                 console.log('未能識別為網址：', cellValue);
               }
             }
